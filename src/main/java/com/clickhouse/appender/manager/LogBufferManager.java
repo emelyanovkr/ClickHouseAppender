@@ -101,7 +101,7 @@ public class LogBufferManager {
         flushSuccessful = true;
         break;
       } catch (Exception e) {
-        System.err.println(this.getClass().getName() + " CONNECTION LOST: " + e.getMessage());
+        System.err.println(this.getClass().getName() + " EXCEPTION - " + e.getMessage());
 
         if (sleepOnRetrySec > 0) {
           try {
