@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-group = 'com.crypto.service'
+group = 'com.clickhouse.appender'
 version = '1.0-SNAPSHOT'
 
 repositories {
