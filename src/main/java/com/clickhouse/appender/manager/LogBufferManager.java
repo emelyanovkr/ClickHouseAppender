@@ -119,7 +119,7 @@ public class LogBufferManager {
   }
 
   public void insertLogMsg(long timestamp, String log) {
-    String tsvData = (timestamp + "\t" + log).replace("\\", "`");
+    String tsvData = (timestamp + "\t" + log.replace("\t", "\\")).replace("\\", "`");
 
     while (true) {
       LogBufferRecord LogBufferRecord = logBufferQueue.get();
