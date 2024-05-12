@@ -18,8 +18,10 @@ import org.apache.logging.log4j.core.config.plugins.*;
 public class ClickHouseAppender extends AbstractAppender {
 
   private static final int DEFAULT_BUFFER_SIZE = 8192;
-  private static final int DEFAULT_TIMEOUT = 30;
-  private static final String DEFAULT_TABLE_NAME = "tickets_logs";
+  private static final int DEFAULT_FLUSH_TIMEOUT_SEC = 30;
+  private static final String DEFAULT_TABLE_NAME = "logs";
+  private static final int DEFAULT_FLUSH_RETRY_COUNT = 3;
+  private static final int DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC = 3;
 
   private final LogBufferManager logBufferManager;
 
@@ -70,23 +72,29 @@ public class ClickHouseAppender extends AbstractAppender {
     }
 
     if (bufferSize == 0) {
-      LOGGER.info("No buffer size provided, default value is set - 8192");
+      LOGGER.info("No buffer size provided, default value is set - {}", DEFAULT_BUFFER_SIZE);
       bufferSize = DEFAULT_BUFFER_SIZE;
     }
 
     if (timeoutSec == 0) {
-      LOGGER.info("No timeout provided, default value is set - 30");
-      timeoutSec = DEFAULT_TIMEOUT;
+      LOGGER.info("No timeout for flush provided, default value is set - {}", DEFAULT_FLUSH_TIMEOUT_SEC);
+      timeoutSec = DEFAULT_FLUSH_TIMEOUT_SEC;
     }
 
     if (tableName == null) {
-      LOGGER.info("No table provided, default table is set - tickets_logs");
+      LOGGER.info("No table provided, default table is set - {}", DEFAULT_TABLE_NAME);
       tableName = DEFAULT_TABLE_NAME;
     }
 
     if (flushRetryCount == 0) {
-      LOGGER.info("No flush retry count provided, default value is set - 3");
-      flushRetryCount = 3;
+      LOGGER.info("No flush retry count provided, default value is set - {}", DEFAULT_FLUSH_RETRY_COUNT);
+      flushRetryCount = DEFAULT_FLUSH_RETRY_COUNT;
+    }
+
+    if(sleepOnRetrySec == 0)
+    {
+      LOGGER.info("No sleep retry count provided, default value is set - {}", DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC);
+      sleepOnRetrySec = DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC;
     }
 
     return new ClickHouseAppender(

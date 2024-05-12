@@ -23,10 +23,6 @@ public class ClickHouseLogDAO {
     this.tableName = tableName;
   }
 
-  public String getTableName() {
-    return tableName;
-  }
-
   public void insertLogData(String tsvData) throws ClickHouseException {
     try (ClickHouseResponse response =
         client

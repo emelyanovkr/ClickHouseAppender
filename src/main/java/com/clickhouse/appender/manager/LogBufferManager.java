@@ -27,7 +27,6 @@ public class LogBufferManager {
   }
 
   private final int bufferSize;
-
   private final int timeoutSec;
   private final int flushRetryCount;
   private final int sleepOnRetrySec;
