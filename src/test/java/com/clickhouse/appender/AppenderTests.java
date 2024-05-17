@@ -1,74 +1,25 @@
 package com.clickhouse.appender;
 
 import com.clickhouse.appender.manager.LogBufferManager;
-import com.clickhouse.appender.util.ConnectionSettings;
-import com.clickhouse.client.ClickHouseNode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.impl.DefaultLogEventFactory;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.message.SimpleMessage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AppenderTests {
 
-  ClickHouseAppender clickHouseAppender;
-
-  @Mock ConnectionSettings connectionSettings;
-  @Mock ClickHouseNode node;
-
-  @Mock Filter filter;
-
-  Layout<String> layout;
-
+  @InjectMocks ClickHouseAppender clickHouseAppender;
   @Mock Marker marker;
-
   @Mock LogBufferManager logBufferManager;
-
-  @BeforeEach
-  void initClickHouseAppender() throws IOException {
-
-    layout = PatternLayout.createDefaultLayout();
-
-    when(connectionSettings.initClickHouseConnection()).thenReturn(node);
-
-    connectionSettings.initClickHouseConnection(
-        anyString(),
-        anyInt(),
-        anyString(),
-        anyString(),
-        anyString(),
-        anyString(),
-        anyString(),
-        anyString());
-
-    clickHouseAppender =
-        ClickHouseAppender.createAppender(
-            "ClickHouseAppender",
-            filter,
-            layout,
-            false,
-            8192,
-            5,
-            "test_table",
-            3,
-            5,
-            connectionSettings);
-
-    clickHouseAppender.setLogBufferManager(logBufferManager);
-  }
 
   @Test
   public void appenderCallsInsertMethod() {

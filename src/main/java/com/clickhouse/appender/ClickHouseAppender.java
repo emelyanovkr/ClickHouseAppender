@@ -9,6 +9,7 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.*;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 @Plugin(
     name = "ClickHouseAppender",
@@ -50,6 +51,11 @@ public class ClickHouseAppender extends AbstractAppender {
 
   public void setLogBufferManager(LogBufferManager logBufferManager) {
     this.logBufferManager = logBufferManager;
+  }
+
+  public ClickHouseAppender()
+  {
+    super("test_name", null, PatternLayout.createDefaultLayout(), true, null);
   }
 
   @PluginFactory
