@@ -15,7 +15,7 @@ public class ClickHouseLogDAO {
 
   public ClickHouseLogDAO(String tableName, ConnectionSettings connectionSettings) {
     try {
-      this.server = ConnectionSettings.initClickHouseConnection(connectionSettings);
+      this.server = connectionSettings.initClickHouseConnection();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

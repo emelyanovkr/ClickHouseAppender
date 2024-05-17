@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class LogBufferManager {
 
   private final ClickHouseLogDAO clickHouseLogDAO;
-
   private final AtomicReference<LogBufferRecord> logBufferQueue;
 
   static class LogBufferRecord {

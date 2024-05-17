@@ -23,7 +23,7 @@ public class ClickHouseAppender extends AbstractAppender {
   private static final int DEFAULT_FLUSH_RETRY_COUNT = 3;
   private static final int DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC = 3;
 
-  private final LogBufferManager logBufferManager;
+  private LogBufferManager logBufferManager;
 
   private ClickHouseAppender(
       String name,
@@ -46,6 +46,10 @@ public class ClickHouseAppender extends AbstractAppender {
             flushRetryCount,
             sleepOnRetrySec,
             connectionSettings);
+  }
+
+  public void setLogBufferManager(LogBufferManager logBufferManager) {
+    this.logBufferManager = logBufferManager;
   }
 
   @PluginFactory

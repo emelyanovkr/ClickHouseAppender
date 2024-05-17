@@ -11,9 +11,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 @Plugin(
     name = "ConnectionSettings",
@@ -49,19 +47,19 @@ public class ConnectionSettings {
     this.customParams = customParams;
   }
 
-  public static ClickHouseNode initClickHouseConnection(ConnectionSettings connectionSettings) throws IOException {
+  public ClickHouseNode initClickHouseConnection() throws IOException {
       return initClickHouseConnection(
-            connectionSettings.host,
-            connectionSettings.port,
-            connectionSettings.database,
-            connectionSettings.username,
-            connectionSettings.password,
-            connectionSettings.SSL,
-            connectionSettings.socketTimeout,
-            connectionSettings.customParams);
+            this.host,
+            this.port,
+            this.database,
+            this.username,
+            this.password,
+            this.SSL,
+            this.socketTimeout,
+            this.customParams);
   }
 
-  public static ClickHouseNode initClickHouseConnection(
+  public ClickHouseNode initClickHouseConnection(
       String host,
       int port,
       String database,
@@ -83,7 +81,7 @@ public class ConnectionSettings {
   }
 
   @PluginFactory
-  public static ConnectionSettings createConnectionHandler(
+  public static ConnectionSettings createConnectionSettings(
       @PluginAttribute("HOST") @Required(message = "No host provided") String host,
       @PluginAttribute("PORT") @Required(message = "No port provided") int port,
       @PluginAttribute("DATABASE") @Required(message = "No db provided") String database,
@@ -102,28 +100,5 @@ public class ConnectionSettings {
         SSL,
         socketTimeout,
         customParams);
-  }
-
-  public String testConnection() {
-    String curlQuery =
-      "curl --user "
-        + username
-        + ":"
-        + password
-        + " https://"
-        + host
-        + ":"
-        + port;
-
-    try
-    {
-      Process process = Runtime.getRuntime().exec(curlQuery.split(" "));
-
-      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      return reader.readLine();
-    } catch (IOException e)
-    {
-      throw new RuntimeException(e);
-    }
   }
 }
