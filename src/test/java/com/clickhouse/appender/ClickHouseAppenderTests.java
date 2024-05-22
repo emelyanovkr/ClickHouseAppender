@@ -5,24 +5,29 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.impl.DefaultLogEventFactory;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AppenderTests {
+public class ClickHouseAppenderTests
+{
 
-  @InjectMocks ClickHouseAppender clickHouseAppender;
   @Mock Marker marker;
   @Mock LogBufferManager logBufferManager;
 
   @Test
   public void appenderCallsInsertMethod() {
+
+    ClickHouseAppender clickHouseAppender =
+        new ClickHouseAppender(
+            "test_name", null, PatternLayout.createDefaultLayout(), false, logBufferManager);
+
     DefaultLogEventFactory factory = new DefaultLogEventFactory();
 
     LogEvent logEvent =

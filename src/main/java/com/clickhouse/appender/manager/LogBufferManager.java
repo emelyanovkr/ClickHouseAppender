@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class LogBufferManager {
 
-  private final ClickHouseLogDAO clickHouseLogDAO;
-  private final AtomicReference<LogBufferRecord> logBufferQueue;
+  protected final ClickHouseLogDAO clickHouseLogDAO;
+  final AtomicReference<LogBufferRecord> logBufferQueue;
 
-  static class LogBufferRecord {
+  protected static class LogBufferRecord {
     final Queue<String> logBuffer;
     final AtomicInteger logBufferSize;
     final AtomicInteger referenceCounter;
@@ -59,10 +59,10 @@ public class LogBufferManager {
             });
   }
 
-  private boolean flushRequired(LogBufferRecord logBufferQueue, long lastCallTime) {
+  protected boolean flushRequired(int logBufferQueueSize, long lastCallTime) {
 
     boolean timeoutElapsed = System.currentTimeMillis() - lastCallTime > timeoutSec * 1000L;
-    boolean bufferSizeSufficient = logBufferQueue.logBufferSize.get() >= bufferSize;
+    boolean bufferSizeSufficient = logBufferQueueSize >= bufferSize;
 
     return bufferSizeSufficient || timeoutElapsed;
   }
@@ -71,7 +71,7 @@ public class LogBufferManager {
     long lastCallTime = System.currentTimeMillis();
     while (true) {
 
-      if (flushRequired(logBufferQueue.get(), lastCallTime)) {
+      if (flushRequired(logBufferQueue.get().logBufferSize.get(), lastCallTime)) {
         lastCallTime = System.currentTimeMillis();
 
         flush();
@@ -85,7 +85,8 @@ public class LogBufferManager {
     }
   }
 
-  private void flush() {
+  protected void flush() {
+
     LogBufferRecord logBufferQueueToInsert = logBufferQueue.get();
     logBufferQueue.compareAndSet(logBufferQueueToInsert, new LogBufferRecord());
 
@@ -120,19 +121,72 @@ public class LogBufferManager {
     String tsvData = (timestamp + "\t" + log.replace("\t", "\\")).replace("\\", "`");
 
     while (true) {
-      LogBufferRecord LogBufferRecord = logBufferQueue.get();
+      LogBufferRecord logBufferRecord = logBufferQueue.get();
 
       try {
-        LogBufferRecord.referenceCounter.getAndIncrement();
-        if (!logBufferQueue.compareAndSet(LogBufferRecord, LogBufferRecord)) {
+        getAndIncrement(logBufferRecord.referenceCounter);
+        if (!logBufferQueue.compareAndSet(logBufferRecord, logBufferRecord)) {
           continue;
         }
-        LogBufferRecord.logBuffer.add(tsvData);
-        LogBufferRecord.logBufferSize.addAndGet(tsvData.getBytes().length);
+
+        addToQueue(logBufferRecord.logBuffer, tsvData);
+        logBufferRecord.logBufferSize.addAndGet(tsvData.getBytes().length);
         break;
       } finally {
-        LogBufferRecord.referenceCounter.getAndDecrement();
+        logBufferRecord.referenceCounter.getAndDecrement();
       }
     }
+  }
+
+  protected void getAndIncrement(AtomicInteger i) {
+    i.incrementAndGet();
+  }
+
+  protected <T> void addToQueue(Queue<T> queue, T element) {
+    queue.add(element);
+  }
+}
+
+class MockLogBufferManagerTest1 extends LogBufferManager {
+
+  public MockLogBufferManagerTest1(
+      int buffer_size,
+      int timeoutSec,
+      String tableName,
+      int flushRetryCount,
+      int sleepOnRetrySec,
+      ConnectionSettings connectionSettings) {
+    super(buffer_size, timeoutSec, tableName, flushRetryCount, sleepOnRetrySec, connectionSettings);
+  }
+
+  protected <T> void addToQueue(Queue<T> queue, T element) {
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    super.addToQueue(queue, element);
+  }
+}
+
+class MockLogBufferManagerTest2 extends LogBufferManager {
+
+  public MockLogBufferManagerTest2(
+      int buffer_size,
+      int timeoutSec,
+      String tableName,
+      int flushRetryCount,
+      int sleepOnRetrySec,
+      ConnectionSettings connectionSettings) {
+    super(buffer_size, timeoutSec, tableName, flushRetryCount, sleepOnRetrySec, connectionSettings);
+  }
+
+  protected void getAndIncrement(AtomicInteger i) {
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    super.getAndIncrement(i);
   }
 }

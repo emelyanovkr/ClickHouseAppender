@@ -9,7 +9,6 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.*;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 
 @Plugin(
     name = "ClickHouseAppender",
@@ -18,13 +17,13 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
     printObject = true)
 public class ClickHouseAppender extends AbstractAppender {
 
-  private static final int DEFAULT_BUFFER_SIZE = 8192;
-  private static final int DEFAULT_FLUSH_TIMEOUT_SEC = 30;
-  private static final String DEFAULT_TABLE_NAME = "logs";
-  private static final int DEFAULT_FLUSH_RETRY_COUNT = 3;
-  private static final int DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC = 3;
+  protected static final int DEFAULT_BUFFER_SIZE = 8192;
+  protected static final int DEFAULT_FLUSH_TIMEOUT_SEC = 30;
+  protected static final String DEFAULT_TABLE_NAME = "logs";
+  protected static final int DEFAULT_FLUSH_RETRY_COUNT = 3;
+  protected static final int DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC = 3;
 
-  private LogBufferManager logBufferManager;
+  protected final LogBufferManager logBufferManager;
 
   private ClickHouseAppender(
       String name,
@@ -37,25 +36,28 @@ public class ClickHouseAppender extends AbstractAppender {
       int flushRetryCount,
       int sleepOnRetrySec,
       ConnectionSettings connectionSettings) {
-    super(name, filter, layout, false, null);
-
-    this.logBufferManager =
+    this(
+        name,
+        filter,
+        layout,
+        ignoreExceptions,
         new LogBufferManager(
             bufferSize,
             bufferFlushTimeoutSec,
             tableName,
             flushRetryCount,
             sleepOnRetrySec,
-            connectionSettings);
+            connectionSettings));
   }
 
-  public void setLogBufferManager(LogBufferManager logBufferManager) {
+  public ClickHouseAppender(
+      String name,
+      Filter filter,
+      Layout<String> layout,
+      boolean ignoreExceptions,
+      LogBufferManager logBufferManager) {
+    super(name, filter, layout, ignoreExceptions, null);
     this.logBufferManager = logBufferManager;
-  }
-
-  public ClickHouseAppender()
-  {
-    super("test_name", null, PatternLayout.createDefaultLayout(), true, null);
   }
 
   @PluginFactory
@@ -87,7 +89,8 @@ public class ClickHouseAppender extends AbstractAppender {
     }
 
     if (timeoutSec == 0) {
-      LOGGER.info("No timeout for flush provided, default value is set - {}", DEFAULT_FLUSH_TIMEOUT_SEC);
+      LOGGER.info(
+          "No timeout for flush provided, default value is set - {}", DEFAULT_FLUSH_TIMEOUT_SEC);
       timeoutSec = DEFAULT_FLUSH_TIMEOUT_SEC;
     }
 
@@ -97,13 +100,15 @@ public class ClickHouseAppender extends AbstractAppender {
     }
 
     if (flushRetryCount == 0) {
-      LOGGER.info("No flush retry count provided, default value is set - {}", DEFAULT_FLUSH_RETRY_COUNT);
+      LOGGER.info(
+          "No flush retry count provided, default value is set - {}", DEFAULT_FLUSH_RETRY_COUNT);
       flushRetryCount = DEFAULT_FLUSH_RETRY_COUNT;
     }
 
-    if(sleepOnRetrySec == 0)
-    {
-      LOGGER.info("No sleep retry count provided, default value is set - {}", DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC);
+    if (sleepOnRetrySec == 0) {
+      LOGGER.info(
+          "No sleep retry count provided, default value is set - {}",
+          DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC);
       sleepOnRetrySec = DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC;
     }
 

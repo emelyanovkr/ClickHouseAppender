@@ -9,9 +9,9 @@ import java.nio.charset.StandardCharsets;
 
 public class ClickHouseLogDAO {
 
-  private final ClickHouseNode server;
-  private final ClickHouseClient client;
-  private final String tableName;
+  protected ClickHouseNode server;
+  protected ClickHouseClient client;
+  protected String tableName;
 
   public ClickHouseLogDAO(String tableName, ConnectionSettings connectionSettings) {
     try {

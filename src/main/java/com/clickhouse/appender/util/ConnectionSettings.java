@@ -19,14 +19,14 @@ import java.io.IOException;
     elementType = "connectionSettings",
     printObject = true)
 public class ConnectionSettings {
-  public final String host;
-  public final int port;
-  public final String database;
-  public final String username;
-  public final String password;
-  public final String SSL;
-  public final String socketTimeout;
-  public final String customParams;
+  protected final String host;
+  protected final int port;
+  protected final String database;
+  protected final String username;
+  protected final String password;
+  protected final String SSL;
+  protected final String socketTimeout;
+  protected final String customParams;
 
   private ConnectionSettings(
       String host,
