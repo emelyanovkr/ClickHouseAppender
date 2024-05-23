@@ -24,6 +24,8 @@ public class ClickHouseAppenderTests
   @Test
   public void appenderCallsInsertMethod() {
 
+    String TEST_MESSAGE = "TEST MESSAGE #1";
+
     ClickHouseAppender clickHouseAppender =
         new ClickHouseAppender(
             "test_name", null, PatternLayout.createDefaultLayout(), false, logBufferManager);
@@ -36,7 +38,7 @@ public class ClickHouseAppenderTests
             marker,
             "TestClass",
             Level.INFO,
-            new SimpleMessage("TEST INFORMATION #1"),
+            new SimpleMessage(TEST_MESSAGE),
             null,
             null);
 

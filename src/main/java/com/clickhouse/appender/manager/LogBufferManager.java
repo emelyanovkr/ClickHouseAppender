@@ -10,7 +10,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class LogBufferManager {
 
-  protected final ClickHouseLogDAO clickHouseLogDAO;
+  // TODO: to discuss - final removed, impossible to check that insertLogData method was called
+  protected ClickHouseLogDAO clickHouseLogDAO;
   final AtomicReference<LogBufferRecord> logBufferQueue;
 
   protected static class LogBufferRecord {
@@ -94,7 +95,7 @@ public class LogBufferManager {
     while (logBufferQueueToInsert.referenceCounter.get() != 0) {}
 
     boolean flushSuccessful = false;
-    for (int i = 0; i < flushRetryCount; i++) {
+    for (int i = 0; i <= flushRetryCount; i++) {
       try {
         clickHouseLogDAO.insertLogData(String.join("\n", logBufferQueueToInsert.logBuffer));
         flushSuccessful = true;
@@ -117,8 +118,13 @@ public class LogBufferManager {
     }
   }
 
+  protected String createLogMsg(long timestamp, String log)
+  {
+    return (timestamp + "\t" + log.replace("\t", "\\")).replace("\\", "`");
+  }
+
   public void insertLogMsg(long timestamp, String log) {
-    String tsvData = (timestamp + "\t" + log.replace("\t", "\\")).replace("\\", "`");
+    String tsvData = createLogMsg(timestamp, log);
 
     while (true) {
       LogBufferRecord logBufferRecord = logBufferQueue.get();
@@ -138,6 +144,7 @@ public class LogBufferManager {
     }
   }
 
+  // for test purposes
   protected void getAndIncrement(AtomicInteger i) {
     i.incrementAndGet();
   }
@@ -147,46 +154,3 @@ public class LogBufferManager {
   }
 }
 
-class MockLogBufferManagerTest1 extends LogBufferManager {
-
-  public MockLogBufferManagerTest1(
-      int buffer_size,
-      int timeoutSec,
-      String tableName,
-      int flushRetryCount,
-      int sleepOnRetrySec,
-      ConnectionSettings connectionSettings) {
-    super(buffer_size, timeoutSec, tableName, flushRetryCount, sleepOnRetrySec, connectionSettings);
-  }
-
-  protected <T> void addToQueue(Queue<T> queue, T element) {
-    try {
-      Thread.sleep(500);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-    super.addToQueue(queue, element);
-  }
-}
-
-class MockLogBufferManagerTest2 extends LogBufferManager {
-
-  public MockLogBufferManagerTest2(
-      int buffer_size,
-      int timeoutSec,
-      String tableName,
-      int flushRetryCount,
-      int sleepOnRetrySec,
-      ConnectionSettings connectionSettings) {
-    super(buffer_size, timeoutSec, tableName, flushRetryCount, sleepOnRetrySec, connectionSettings);
-  }
-
-  protected void getAndIncrement(AtomicInteger i) {
-    try {
-      Thread.sleep(500);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-    super.getAndIncrement(i);
-  }
-}
