@@ -95,6 +95,8 @@ public class LogBufferManager {
     while (logBufferQueueToInsert.referenceCounter.get() != 0) {}
 
     boolean flushSuccessful = false;
+
+    // TODO: rename to maxFlushAttempts
     for (int i = 0; i <= flushRetryCount; i++) {
       try {
         clickHouseLogDAO.insertLogData(String.join("\n", logBufferQueueToInsert.logBuffer));

@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -30,7 +29,7 @@ public class LogBufferManagerTests {
   @Mock ClickHouseLogDAO clickHouseLogDAO;
 
   @BeforeEach
-  void setUp() throws IOException, ClickHouseException {
+  void setUp() throws IOException {
     when(connectionSettings.initClickHouseConnection()).thenReturn(node);
     when(node.getProtocol()).thenReturn(ClickHouseProtocol.HTTP);
     LogBufferManager logBufferManager =
@@ -104,8 +103,7 @@ public class LogBufferManagerTests {
   }
 
   @Test
-  public void insertLogDataThrowsLessExceptionThanFlushRetryCount()
-      throws ClickHouseException, InterruptedException {
+  public void insertLogDataThrowsLessExceptionThanFlushRetryCount() throws ClickHouseException {
 
     long TEST_TIMESTAMP = 11111;
     String TEST_MESSAGE = "TEST MESSAGE #1";
@@ -114,21 +112,15 @@ public class LogBufferManagerTests {
         .when(spyManager.clickHouseLogDAO)
         .insertLogData(anyString());
 
-    Thread flushThread = new Thread(spyManager::flush, "FLUSH-THREAD");
-    Thread insertThread =
-        new Thread(() -> spyManager.insertLogMsg(TEST_TIMESTAMP, TEST_MESSAGE), "INSERT-THREAD");
-
-    insertThread.start();
-
-    Thread.sleep(100);
-
-    flushThread.start();
+    spyManager.insertLogMsg(TEST_TIMESTAMP, TEST_MESSAGE);
+    spyManager.flush();
 
     assertThrows(
         Exception.class,
         () ->
             clickHouseLogDAO.insertLogData(spyManager.createLogMsg(TEST_TIMESTAMP, TEST_MESSAGE)));
 
-    verify(spyManager.clickHouseLogDAO, timeout(1000).atLeast(2)).insertLogData(anyString());
+    // 3rd call from SHUTDOWN-THREAD
+    verify(spyManager.clickHouseLogDAO, timeout(1000).times(3)).insertLogData(anyString());
   }
 }
