@@ -20,12 +20,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LogBufferManagerTests {
-
   LogBufferManager spyManager;
 
   @Mock ConnectionSettings connectionSettings;
   @Mock ClickHouseNode node;
-
   @Mock ClickHouseLogDAO clickHouseLogDAO;
 
   @BeforeEach
@@ -33,7 +31,7 @@ public class LogBufferManagerTests {
     when(connectionSettings.initClickHouseConnection()).thenReturn(node);
     when(node.getProtocol()).thenReturn(ClickHouseProtocol.HTTP);
     LogBufferManager logBufferManager =
-        new LogBufferManager(8192, 1, "test", 1, 0, connectionSettings);
+        new LogBufferManager(8192, 30, "test", 2, 0, connectionSettings);
     spyManager = spy(logBufferManager);
 
     spyManager.clickHouseLogDAO = clickHouseLogDAO;
@@ -41,7 +39,6 @@ public class LogBufferManagerTests {
 
   @Test
   public void flushCalledWithTrueConditions() throws InterruptedException {
-
     doReturn(true).when(spyManager).flushRequired(anyInt(), anyLong());
 
     Thread bufferManagement = new Thread(() -> spyManager.bufferManagement());
@@ -88,9 +85,7 @@ public class LogBufferManagerTests {
         .getAndIncrement(any());
 
     insertThread.start();
-
     Thread.sleep(50);
-
     flushThread.start();
 
     verify(spyManager)
@@ -103,8 +98,7 @@ public class LogBufferManagerTests {
   }
 
   @Test
-  public void insertLogDataThrowsLessExceptionThanFlushRetryCount() throws ClickHouseException {
-
+  public void insertLogDataThrowsLessExceptionThanMaxFlushAttempts() throws ClickHouseException {
     long TEST_TIMESTAMP = 11111;
     String TEST_MESSAGE = "TEST MESSAGE #1";
 
@@ -115,12 +109,37 @@ public class LogBufferManagerTests {
     spyManager.insertLogMsg(TEST_TIMESTAMP, TEST_MESSAGE);
     spyManager.flush();
 
+    verify(spyManager.clickHouseLogDAO, timeout(1000).times(2)).insertLogData(anyString());
+
     assertThrows(
         Exception.class,
         () ->
             clickHouseLogDAO.insertLogData(spyManager.createLogMsg(TEST_TIMESTAMP, TEST_MESSAGE)));
+  }
 
-    // 3rd call from SHUTDOWN-THREAD
-    verify(spyManager.clickHouseLogDAO, timeout(1000).times(3)).insertLogData(anyString());
+  @Test
+  public void flushWillWaitOnSpinningLockWhileAddingToQueueLogMsg()
+      throws InterruptedException, ClickHouseException {
+    long TEST_TIMESTAMP = 11111;
+    String TEST_MESSAGE = "TEST MESSAGE #1";
+
+    doAnswer(
+            invocation -> {
+              Thread.sleep(500);
+              return invocation.callRealMethod();
+            })
+        .when(spyManager)
+        .addToQueue(any(), any());
+
+    Thread insertThread =
+        new Thread(() -> spyManager.insertLogMsg(TEST_TIMESTAMP, TEST_MESSAGE), "INSERT-THREAD");
+    insertThread.start();
+
+    Thread.sleep(50);
+
+    spyManager.flush();
+
+    verify(spyManager.clickHouseLogDAO, timeout(600).times(1))
+        .insertLogData(spyManager.createLogMsg(TEST_TIMESTAMP, TEST_MESSAGE));
   }
 }

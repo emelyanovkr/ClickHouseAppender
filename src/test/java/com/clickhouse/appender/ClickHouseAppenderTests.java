@@ -17,13 +17,11 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ClickHouseAppenderTests
 {
-
   @Mock Marker marker;
   @Mock LogBufferManager logBufferManager;
 
   @Test
   public void appenderCallsInsertMethod() {
-
     String TEST_MESSAGE = "TEST MESSAGE #1";
 
     ClickHouseAppender clickHouseAppender =
@@ -45,7 +43,6 @@ public class ClickHouseAppenderTests
     clickHouseAppender.append(logEvent);
 
     String serializedEvent = (String) clickHouseAppender.getLayout().toSerializable(logEvent);
-
     if (serializedEvent.endsWith(System.lineSeparator())) {
       serializedEvent =
           serializedEvent.substring(0, serializedEvent.length() - System.lineSeparator().length());

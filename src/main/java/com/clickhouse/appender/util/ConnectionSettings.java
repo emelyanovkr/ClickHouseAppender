@@ -48,15 +48,15 @@ public class ConnectionSettings {
   }
 
   public ClickHouseNode initClickHouseConnection() throws IOException {
-      return initClickHouseConnection(
-            this.host,
-            this.port,
-            this.database,
-            this.username,
-            this.password,
-            this.SSL,
-            this.socketTimeout,
-            this.customParams);
+    return initClickHouseConnection(
+        this.host,
+        this.port,
+        this.database,
+        this.username,
+        this.password,
+        this.SSL,
+        this.socketTimeout,
+        this.customParams);
   }
 
   public ClickHouseNode initClickHouseConnection(
@@ -67,8 +67,7 @@ public class ConnectionSettings {
       String password,
       String SSL,
       String socketTimeout,
-      String customParams)
-      throws IOException {
+      String customParams) {
     return ClickHouseNode.builder()
         .host(host)
         .port(ClickHouseProtocol.HTTP, port)
@@ -92,13 +91,6 @@ public class ConnectionSettings {
       @PluginAttribute("CUSTOM_PARAMS") String customParams) {
 
     return new ConnectionSettings(
-        host,
-        port,
-        database,
-        username,
-        password,
-        SSL,
-        socketTimeout,
-        customParams);
+        host, port, database, username, password, SSL, socketTimeout, customParams);
   }
 }

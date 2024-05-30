@@ -16,11 +16,10 @@ import org.apache.logging.log4j.core.config.plugins.*;
     elementType = Appender.ELEMENT_TYPE,
     printObject = true)
 public class ClickHouseAppender extends AbstractAppender {
-
   protected static final int DEFAULT_BUFFER_SIZE = 8192;
   protected static final int DEFAULT_FLUSH_TIMEOUT_SEC = 30;
   protected static final String DEFAULT_TABLE_NAME = "logs";
-  protected static final int DEFAULT_FLUSH_RETRY_COUNT = 3;
+  protected static final int DEFAULT_MAX_FLUSH_ATTEMPTS = 3;
   protected static final int DEFAULT_SLEEP_ON_FLUSH_RETRY_SEC = 3;
 
   protected final LogBufferManager logBufferManager;
@@ -33,7 +32,7 @@ public class ClickHouseAppender extends AbstractAppender {
       int bufferSize,
       int bufferFlushTimeoutSec,
       String tableName,
-      int flushRetryCount,
+      int maxFlushAttempts,
       int sleepOnRetrySec,
       ConnectionSettings connectionSettings) {
     this(
@@ -45,7 +44,7 @@ public class ClickHouseAppender extends AbstractAppender {
             bufferSize,
             bufferFlushTimeoutSec,
             tableName,
-            flushRetryCount,
+            maxFlushAttempts,
             sleepOnRetrySec,
             connectionSettings));
   }
@@ -69,13 +68,14 @@ public class ClickHouseAppender extends AbstractAppender {
       @PluginAttribute("bufferSize") int bufferSize,
       @PluginAttribute("timeoutSec") int timeoutSec,
       @PluginAttribute("tableName") String tableName,
-      @PluginAttribute("flushRetryCount") int flushRetryCount,
+      @PluginAttribute("maxFlushAttempts") int maxFlushAttempts,
       @PluginAttribute("sleepOnRetrySec") int sleepOnRetrySec,
       @PluginElement("ConnectionSettings") ConnectionSettings connectionSettings) {
 
     if (name == null) {
-      LOGGER.info("No name provided for ClickHouseAppender, default name is set");
-      name = "ClickHouseAppender";
+      LOGGER.info(
+          "No name provided for ClickHouseAppender, default name is set - {}", DEFAULT_TABLE_NAME);
+      name = DEFAULT_TABLE_NAME;
     }
 
     if (layout == null) {
@@ -99,10 +99,10 @@ public class ClickHouseAppender extends AbstractAppender {
       tableName = DEFAULT_TABLE_NAME;
     }
 
-    if (flushRetryCount == 0) {
+    if (maxFlushAttempts == 0) {
       LOGGER.info(
-          "No flush retry count provided, default value is set - {}", DEFAULT_FLUSH_RETRY_COUNT);
-      flushRetryCount = DEFAULT_FLUSH_RETRY_COUNT;
+          "No max flush attempts provided, default value is set - {}", DEFAULT_MAX_FLUSH_ATTEMPTS);
+      maxFlushAttempts = DEFAULT_MAX_FLUSH_ATTEMPTS;
     }
 
     if (sleepOnRetrySec == 0) {
@@ -120,7 +120,7 @@ public class ClickHouseAppender extends AbstractAppender {
         bufferSize,
         timeoutSec,
         tableName,
-        flushRetryCount,
+        maxFlushAttempts,
         sleepOnRetrySec,
         connectionSettings);
   }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class ClickHouseLogDAO {
-
   protected ClickHouseNode server;
   protected ClickHouseClient client;
   protected String tableName;

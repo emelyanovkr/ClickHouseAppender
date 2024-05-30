@@ -9,8 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class LogBufferManager {
-
-  // TODO: to discuss - final removed, impossible to check that insertLogData method was called
   protected ClickHouseLogDAO clickHouseLogDAO;
   final AtomicReference<LogBufferRecord> logBufferQueue;
 
@@ -28,20 +26,20 @@ public class LogBufferManager {
 
   private final int bufferSize;
   private final int timeoutSec;
-  private final int flushRetryCount;
+  private final int maxFlushAttempts;
   private final int sleepOnRetrySec;
 
   public LogBufferManager(
       int buffer_size,
       int timeoutSec,
       String tableName,
-      int flushRetryCount,
+      int maxFlushAttempts,
       int sleepOnRetrySec,
       ConnectionSettings connectionSettings) {
 
     this.bufferSize = buffer_size;
     this.timeoutSec = timeoutSec;
-    this.flushRetryCount = flushRetryCount;
+    this.maxFlushAttempts = maxFlushAttempts;
     this.sleepOnRetrySec = sleepOnRetrySec;
 
     this.clickHouseLogDAO = new ClickHouseLogDAO(tableName, connectionSettings);
@@ -61,7 +59,6 @@ public class LogBufferManager {
   }
 
   protected boolean flushRequired(int logBufferQueueSize, long lastCallTime) {
-
     boolean timeoutElapsed = System.currentTimeMillis() - lastCallTime > timeoutSec * 1000L;
     boolean bufferSizeSufficient = logBufferQueueSize >= bufferSize;
 
@@ -71,13 +68,11 @@ public class LogBufferManager {
   public void bufferManagement() {
     long lastCallTime = System.currentTimeMillis();
     while (true) {
-
       if (flushRequired(logBufferQueue.get().logBufferSize.get(), lastCallTime)) {
         lastCallTime = System.currentTimeMillis();
 
         flush();
       }
-
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -87,7 +82,6 @@ public class LogBufferManager {
   }
 
   protected void flush() {
-
     LogBufferRecord logBufferQueueToInsert = logBufferQueue.get();
     logBufferQueue.compareAndSet(logBufferQueueToInsert, new LogBufferRecord());
 
@@ -96,8 +90,7 @@ public class LogBufferManager {
 
     boolean flushSuccessful = false;
 
-    // TODO: rename to maxFlushAttempts
-    for (int i = 0; i <= flushRetryCount; i++) {
+    for (int i = 0; i < maxFlushAttempts; i++) {
       try {
         clickHouseLogDAO.insertLogData(String.join("\n", logBufferQueueToInsert.logBuffer));
         flushSuccessful = true;
@@ -120,8 +113,7 @@ public class LogBufferManager {
     }
   }
 
-  protected String createLogMsg(long timestamp, String log)
-  {
+  protected String createLogMsg(long timestamp, String log) {
     return (timestamp + "\t" + log.replace("\t", "\\")).replace("\\", "`");
   }
 
@@ -155,4 +147,3 @@ public class LogBufferManager {
     queue.add(element);
   }
 }
-
