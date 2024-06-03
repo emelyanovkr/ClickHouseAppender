@@ -31,7 +31,7 @@ public class ClickHouseAppender extends AbstractAppender {
       int bufferSize,
       int bufferFlushTimeoutSec,
       String tableName,
-      int flushRetryCount,
+      int maxFlushAttempts,
       int sleepOnRetrySec,
       ConnectionSettings connectionSettings) {
     super(name, filter, layout, false, null);
@@ -41,7 +41,7 @@ public class ClickHouseAppender extends AbstractAppender {
             bufferSize,
             bufferFlushTimeoutSec,
             tableName,
-            flushRetryCount,
+            maxFlushAttempts,
             sleepOnRetrySec,
             connectionSettings);
   }
@@ -55,7 +55,7 @@ public class ClickHouseAppender extends AbstractAppender {
       @PluginAttribute("bufferSize") int bufferSize,
       @PluginAttribute("timeoutSec") int timeoutSec,
       @PluginAttribute("tableName") String tableName,
-      @PluginAttribute("flushRetryCount") int flushRetryCount,
+      @PluginAttribute("maxFlushAttempts") int maxFlushAttempts,
       @PluginAttribute("sleepOnRetrySec") int sleepOnRetrySec,
       @PluginElement("ConnectionSettings") ConnectionSettings connectionSettings) {
 
@@ -84,9 +84,9 @@ public class ClickHouseAppender extends AbstractAppender {
       tableName = DEFAULT_TABLE_NAME;
     }
 
-    if (flushRetryCount == 0) {
+    if (maxFlushAttempts == 0) {
       LOGGER.info("No flush retry count provided, default value is set - 3");
-      flushRetryCount = 3;
+      maxFlushAttempts = 3;
     }
 
     return new ClickHouseAppender(
@@ -97,7 +97,7 @@ public class ClickHouseAppender extends AbstractAppender {
         bufferSize,
         timeoutSec,
         tableName,
-        flushRetryCount,
+        maxFlushAttempts,
         sleepOnRetrySec,
         connectionSettings);
   }

@@ -29,20 +29,20 @@ public class LogBufferManager {
   private final int bufferSize;
 
   private final int timeoutSec;
-  private final int flushRetryCount;
+  private final int maxFlushAttempts;
   private final int sleepOnRetrySec;
 
   public LogBufferManager(
       int buffer_size,
       int timeoutSec,
       String tableName,
-      int flushRetryCount,
+      int maxFlushAttempts,
       int sleepOnRetrySec,
       ConnectionSettings connectionSettings) {
 
     this.bufferSize = buffer_size;
     this.timeoutSec = timeoutSec;
-    this.flushRetryCount = flushRetryCount;
+    this.maxFlushAttempts = maxFlushAttempts;
     this.sleepOnRetrySec = sleepOnRetrySec;
 
     this.clickHouseLogDAO = new ClickHouseLogDAO(tableName, connectionSettings);
@@ -95,7 +95,7 @@ public class LogBufferManager {
     while (logBufferQueueToInsert.referenceCounter.get() != 0) {}
 
     boolean flushSuccessful = false;
-    for (int i = 0; i < flushRetryCount; i++) {
+    for (int i = 0; i < maxFlushAttempts; i++) {
       try {
         clickHouseLogDAO.insertLogData(String.join("\n", logBufferQueueToInsert.logBuffer));
         flushSuccessful = true;
