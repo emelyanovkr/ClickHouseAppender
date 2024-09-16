@@ -96,11 +96,11 @@ public class LogBufferManager {
         flushSuccessful = true;
         break;
       } catch (Exception e) {
-        System.err.println(this.getClass().getName() + " EXCEPTION - " + e.getMessage());
+        System.err.println(this.getClass().getName() + " EXCEPTION - " + e.getMessage() + " - RETRY #" + i);
 
         if (sleepOnRetrySec > 0) {
           try {
-            Thread.sleep(sleepOnRetrySec);
+            Thread.sleep(sleepOnRetrySec * 1000L);
           } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
           }

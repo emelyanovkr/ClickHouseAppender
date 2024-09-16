@@ -66,7 +66,7 @@ public class ClickHouseAppender extends AbstractAppender {
       @PluginElement("layout") Layout<String> layout,
       @PluginAttribute("ignoreExceptions") boolean ignoreExceptions,
       @PluginAttribute("bufferSize") int bufferSize,
-      @PluginAttribute("timeoutSec") int timeoutSec,
+      @PluginAttribute("flushTimeoutSec") int flushTimeoutSec,
       @PluginAttribute("tableName") String tableName,
       @PluginAttribute("maxFlushAttempts") int maxFlushAttempts,
       @PluginAttribute("sleepOnRetrySec") int sleepOnRetrySec,
@@ -88,10 +88,10 @@ public class ClickHouseAppender extends AbstractAppender {
       bufferSize = DEFAULT_BUFFER_SIZE;
     }
 
-    if (timeoutSec == 0) {
+    if (flushTimeoutSec == 0) {
       LOGGER.info(
           "No timeout for flush provided, default value is set - {}", DEFAULT_FLUSH_TIMEOUT_SEC);
-      timeoutSec = DEFAULT_FLUSH_TIMEOUT_SEC;
+      flushTimeoutSec = DEFAULT_FLUSH_TIMEOUT_SEC;
     }
 
     if (tableName == null) {
@@ -118,7 +118,7 @@ public class ClickHouseAppender extends AbstractAppender {
         layout,
         ignoreExceptions,
         bufferSize,
-        timeoutSec,
+        flushTimeoutSec,
         tableName,
         maxFlushAttempts,
         sleepOnRetrySec,
