@@ -20,7 +20,7 @@ For acquiring a connection to the ClickHouse DB used a JavaClient API ([ClickHou
 ```
         <ClickHouseAppender name="ClickHouseAppender" ignoreExceptions="false"
                             bufferSize="8192"
-                            timeoutSec="5"
+                            flushTimeoutSec="5"
                             tableName="log_table">
 
             <ConnectionSettings HOST=""
