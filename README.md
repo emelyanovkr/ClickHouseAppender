@@ -12,7 +12,7 @@ All messages are stored in the [buffer](https://github.com/emelyanovkr/ClickHous
 Log messages will be flushed straight to the ClickHouse DB after **one of the conditions**:
 - timeout;
 - buffer size limit exceeded;
-- shutdown JVM ([SHUTDOWN-THREAD](https://github.com/emelyanovkr/ClickHouseAppender/blob/main/src/main/java/com/clickhouse/appender/manager/LogBufferManager.java#L53C7-L56C25)
+- shutdown JVM ([SHUTDOWN-THREAD](https://github.com/emelyanovkr/ClickHouseAppender/blob/main/src/main/java/com/clickhouse/appender/manager/LogBufferManager.java#L53C7-L56C25))
 
 For acquiring a connection to the ClickHouse DB used a JavaClient API ([ClickHouse Java API](https://github.com/ClickHouse/clickhouse-java)).
 
