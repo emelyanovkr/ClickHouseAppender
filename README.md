@@ -3,7 +3,7 @@
 This is a custom Log4j 2 appender that sends LOGGER messages to a clickhouse database in a specified table in JSON format. Table must have 2 columns:
 ```
 CREATE TABLE log_table (
-	timestamp DateTime PRIMARY KEY,
+	timestamp DateTime64 PRIMARY KEY,
 	log String
 	) Engine = MergeTree()
 ```
